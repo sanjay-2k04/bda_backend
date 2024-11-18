@@ -1,27 +1,26 @@
 from flask import Flask, request, jsonify
+import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import pandas as pd
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for cross-origin requests
+CORS(app)
 
-# Load the data
-file_path = 'datasets/All_Streaming_Shows.csv'
+# Load a smaller dataset or limit features to reduce memory usage
+file_path = 'path_to_your/All_Streaming_Shows.csv'
 df = pd.read_csv(file_path)
 
-# Data Preprocessing
+# Limit features to reduce memory usage
 df['Genre'] = df['Genre'].fillna('')
-df['Content Rating'] = df['Content Rating'].fillna('')
-df['features'] = df['Genre'] + ' ' + df['Content Rating'] + ' ' + df['IMDB Rating'].astype(str)
+df['features'] = df['Genre']
 
-# Vectorize the features
-vectorizer = TfidfVectorizer()
+# Vectorize only on 'Genre' feature
+vectorizer = TfidfVectorizer(max_features=500)  # Limiting max features can help reduce memory usage
 tfidf_matrix = vectorizer.fit_transform(df['features'])
 cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
 
-# Recommendation function
+# Function to get recommendations
 def get_recommendations(title):
     if title not in df['Series Title'].values:
         return None
@@ -32,7 +31,6 @@ def get_recommendations(title):
     series_indices = [i[0] for i in sim_scores]
     return df['Series Title'].iloc[series_indices].tolist()
 
-# Flask route for recommendation
 @app.route('/recommend', methods=['POST'])
 def recommend():
     data = request.json
