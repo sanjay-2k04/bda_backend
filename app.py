@@ -8,7 +8,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Load a smaller dataset or limit features to reduce memory usage
-file_path = 'path_to_your/All_Streaming_Shows.csv'
+file_path = 'datasets/All_Streaming_Shows.csv'
 df = pd.read_csv(file_path)
 
 # Limit features to reduce memory usage
